@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zurto - Catálogo PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Lexend', sans-serif; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .categoria-activa { background-color: #2563eb; color: white; border-color: #2563eb; }
+        .transition-brand { transition: all 0.3s ease; }
+    </style>
+</head>
+<body class="bg-gray-50 pb-44">
+
+    <div id="header-bg" class="bg-blue-600 p-6 sticky top-0 z-50 shadow-md text-white flex justify-between items-center transition-brand">
+        <div class="flex items-center gap-3">
+            <span id="marca-logo" class="text-2xl bg-white/20 w-10 h-10 flex items-center justify-center rounded-xl">🍦</span>
+            <div>
+                <h1 id="marca-nombre" class="text-xl font-bold italic tracking-tighter">ZURTO</h1>
+                <p id="nombre-tienda-header" class="text-[10px] uppercase font-bold opacity-80 tracking-widest"></p>
+            </div>
+        </div>
+    </div>
+
+    <div class="sticky top-[88px] z-40 bg-gray-50/90 backdrop-blur-md p-4 overflow-x-auto no-scrollbar flex gap-2 border-b">
+        <button onclick="filtrar('todas')" id="cat-todas" class="categoria-activa whitespace-nowrap px-6 py-2 rounded-full border border-gray-300 text-sm font-bold transition-brand">Todas</button>
+        <button onclick="filtrar('agua')" id="cat-agua" class="bg-white whitespace-nowrap px-6 py-2 rounded-full border border-gray-300 text-sm font-bold text-gray-500 transition-brand">Agua</button>
+        <button onclick="filtrar('crema')" id="cat-crema" class="bg-white whitespace-nowrap px-6 py-2 rounded-full border border-gray-300 text-sm font-bold text-gray-500 transition-brand">Crema</button>
+        <button onclick="filtrar('especial')" id="cat-especial" class="bg-white whitespace-nowrap px-6 py-2 rounded-full border border-gray-300 text-sm font-bold text-gray-500 transition-brand">Especiales</button>
+    </div>
+
+    <div class="p-4 grid grid-cols-1 gap-4" id="lista-productos"></div>
+
+    <div id="modal-producto" class="fixed inset-0 bg-black/70 z-[60] hidden flex items-end sm:items-center justify-center">
+        <div class="bg-white w-full max-w-lg rounded-t-[40px] sm:rounded-[40px] overflow-hidden">
+            <div class="relative">
+                <img id="modal-img-principal" src="" class="w-full h-80 object-cover">
+                <button onclick="cerrarModal()" class="absolute top-6 right-6 bg-black/20 backdrop-blur-md text-white w-10 h-10 rounded-full font-bold">✕</button>
+            </div>
+            
+            <div id="modal-galeria" class="flex gap-2 p-4 justify-center"></div>
+
+            <div class="p-8 pt-2">
+                <h2 id="modal-titulo" class="text-2xl font-bold text-gray-900 mb-2"></h2>
+                <p id="modal-desc" class="text-gray-500 text-sm leading-relaxed mb-6"></p>
+                <div class="flex gap-4">
+                    <div class="flex-1 bg-gray-50 p-4 rounded-2xl border">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase">Empaque</p>
+                        <p class="text-xs font-bold text-gray-700">Caja x 20 Unid.</p>
+                    </div>
+                    <div class="flex-1 bg-gray-50 p-4 rounded-2xl border">
+                        <p class="text-[10px] text-gray-400 font-bold uppercase">Temperatura</p>
+                        <p class="text-xs font-bold text-gray-700">-18°C Grados</p>
+                    </div>
+                </div>
+                <button onclick="cerrarModal()" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold mt-6 shadow-lg">Volver al Catálogo</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t p-6 shadow-2xl z-50 flex justify-between items-center">
+        <div>
+            <p class="text-[10px] text-gray-400 font-bold uppercase tracking-widest">Subtotal</p>
+            <p class="text-3xl font-bold text-gray-800" id="visor-total">$0</p>
+        </div>
+        <button onclick="prepararEnvio()" class="bg-blue-600 text-white px-10 py-4 rounded-2xl font-bold shadow-lg transition-brand active:scale-95">Finalizar</button>
+    </div>
+
+    <script>
+        let productos = JSON.parse(localStorage.getItem('mis_productos_inventario')) || [];
+        let carrito = {};
+
+        function dibujarProductos(categoria = 'todas') {
+            const contenedor = document.getElementById('lista-productos');
+            contenedor.innerHTML = "";
+            const filtrados = categoria === 'todas' ? productos : productos.filter(p => p.cat === categoria);
+
+            filtrados.forEach(p => {
+                contenedor.innerHTML += `
+                    <div class="bg-white rounded-[32px] overflow-hidden shadow-sm border border-gray-100 flex items-center p-3 gap-4">
+                        <img src="${p.imagenes[0]}" onclick="verDetalle(${p.id})" class="w-24 h-24 rounded-2xl object-cover cursor-pointer">
+                        <div class="flex-1">
+                            <h3 class="font-bold text-gray-800 text-sm mb-1">${p.nombre}</h3>
+                            <p class="text-blue-600 font-extrabold text-xs mb-2">$${p.precio.toLocaleString()}</p>
+                            <div class="flex items-center justify-between bg-gray-50 p-1 rounded-xl border border-gray-100 max-w-[120px]">
+                                <button onclick="cambiarCantidad('${p.nombre}', ${p.precio}, -1)" class="w-8 h-8 bg-white rounded-lg font-bold shadow-sm">-</button>
+                                <span id="cant-${p.nombre}" class="font-bold text-xs">${carrito[p.nombre] || 0}</span>
+                                <button onclick="cambiarCantidad('${p.nombre}', ${p.precio}, 1)" class="w-8 h-8 bg-blue-600 text-white rounded-lg font-bold shadow-sm">+</button>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            });
+            aplicarBranding();
+        }
+
+        function verDetalle(id) {
+            const p = productos.find(item => item.id === id);
+            if(!p) return;
+
+            document.getElementById('modal-img-principal').src = p.imagenes[0];
+            document.getElementById('modal-titulo').innerText = p.nombre;
+            document.getElementById('modal-desc').innerText = p.desc || "Sin descripción disponible.";
+            
+            // Crear galería de miniaturas
+            const galeria = document.getElementById('modal-galeria');
+            galeria.innerHTML = "";
+            p.imagenes.forEach(img => {
+                galeria.innerHTML += `<img src="${img}" onclick="document.getElementById('modal-img-principal').src='${img}'" class="w-12 h-12 rounded-lg object-cover cursor-pointer border-2 border-transparent hover:border-blue-600">`;
+            });
+
+            document.getElementById('modal-producto').classList.remove('hidden');
+        }
+
+        function cerrarModal() { document.getElementById('modal-producto').classList.add('hidden'); }
+
+        function filtrar(cat) {
+            document.querySelectorAll('button[id^="cat-"]').forEach(btn => btn.className = "bg-white whitespace-nowrap px-6 py-2 rounded-full border border-gray-300 text-sm font-bold text-gray-500");
+            document.getElementById('cat-' + cat).className = "categoria-activa whitespace-nowrap px-6 py-2 rounded-full text-sm font-bold shadow-md";
+            dibujarProductos(cat);
+        }
+
+        function cambiarCantidad(nombre, precio, cambio) {
+            if (!carrito[nombre]) carrito[nombre] = 0;
+            carrito[nombre] += cambio;
+            if (carrito[nombre] < 0) carrito[nombre] = 0;
+            document.getElementById(`cant-${nombre}`).innerText = carrito[nombre];
+            calcularTotal();
+        }
+
+        function calcularTotal() {
+            let total = 0;
+            for (let p in carrito) {
+                const prod = productos.find(item => item.nombre === p);
+                if (prod) total += carrito[p] * prod.precio;
+            }
+            document.getElementById('visor-total').innerText = "$" + total.toLocaleString('es-CO');
+        }
+
+        function prepararEnvio() {
+            let total = parseInt(document.getElementById('visor-total').innerText.replace(/[^0-9]/g, ''));
+            if (total === 0) return alert("Selecciona productos");
+            let res = "";
+            for (let p in carrito) if (carrito[p] > 0) res += `${carrito[p]}x ${p}, `;
+            enviarPedidoASupabase(total, res);
+        }
+
+        document.getElementById('nombre-tienda-header').innerText = localStorage.getItem('negocio_activo') || "Cliente";
+        dibujarProductos();
+        aplicarBranding();
+    </script>
+</body>
+</html>

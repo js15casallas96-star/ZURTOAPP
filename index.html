@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zurto - Login Negocio</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Lexend', sans-serif; }</style>
+</head>
+<body class="bg-gray-50 flex items-center justify-center min-h-screen font-['Lexend']">
+    <div class="w-full max-w-md p-8 text-center">
+        <h1 class="text-6xl font-bold text-blue-600 tracking-tighter mb-2 italic">ZURTO</h1>
+        <p class="text-gray-400 uppercase tracking-widest text-[10px] font-bold mb-10 text-center">Gestión de Abastecimiento</p>
+        
+        <div class="bg-white p-8 rounded-3xl shadow-xl border border-gray-100">
+            <div class="text-left mb-6">
+                <label class="text-xs font-bold text-gray-500 uppercase ml-1">Nombre del Comercio</label>
+                <input id="nombreNegocio" type="text" placeholder="Ej: Tienda La Bendición" class="w-full mt-1 px-4 py-4 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-blue-600">
+            </div>
+            
+            <div class="text-left mb-8">
+                <label class="text-xs font-bold text-gray-500 uppercase ml-1">NIT / ID de Cliente</label>
+                <input type="text" placeholder="900.xxx.xxx-x" class="w-full mt-1 px-4 py-4 rounded-xl bg-gray-50 border border-gray-200 outline-none focus:border-blue-600">
+            </div>
+            
+            <button onclick="guardarYEntrar()" class="w-full bg-blue-600 text-white font-bold py-4 rounded-2xl shadow-lg block hover:bg-blue-700 transition-all active:scale-95 text-center">
+                Acceder al Catálogo
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function guardarYEntrar() {
+            const nombre = document.getElementById('nombreNegocio').value;
+            if (nombre.trim() === "") {
+                alert("Por favor, ingresa el nombre del comercio");
+                return;
+            }
+            // Guardamos el nombre del negocio en la memoria del navegador
+            localStorage.setItem('negocio_activo', nombre);
+            window.location.href = "catalogo.html";
+        }
+    </script>
+</body>
+</html>

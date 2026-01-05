@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zurto - Gestionar Productos PRO</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="config.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
+    <style>body { font-family: 'Lexend', sans-serif; }</style>
+</head>
+<body class="bg-slate-50 pb-20">
+
+    <div class="max-w-md mx-auto p-6">
+        <header class="flex justify-between items-center mb-8">
+            <div>
+                <h1 class="text-2xl font-bold text-slate-900">Mis Productos</h1>
+                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Editor de Catálogo</p>
+            </div>
+            <button onclick="abrirFormulario()" class="bg-blue-600 text-white w-12 h-12 rounded-2xl font-bold text-2xl shadow-lg">+</button>
+        </header>
+
+        <div id="formulario-producto" class="hidden bg-white p-6 rounded-[32px] shadow-xl border border-slate-100 mb-8 space-y-4">
+            <h3 class="font-bold text-slate-800">Detalles del Producto</h3>
+            
+            <div class="grid grid-cols-3 gap-2">
+                <div onclick="document.getElementById('file-1').click()" class="border-2 border-dashed border-slate-200 rounded-xl h-24 flex items-center justify-center bg-slate-50 overflow-hidden">
+                    <img id="prev-1" class="hidden w-full h-full object-cover">
+                    <span id="plus-1" class="text-slate-300 text-xl">+</span>
+                    <input type="file" id="file-1" class="hidden" accept="image/*" onchange="procesarFoto(event, 1)">
+                </div>
+                <div onclick="document.getElementById('file-2').click()" class="border-2 border-dashed border-slate-200 rounded-xl h-24 flex items-center justify-center bg-slate-50 overflow-hidden">
+                    <img id="prev-2" class="hidden w-full h-full object-cover">
+                    <span id="plus-2" class="text-slate-300 text-xl">+</span>
+                    <input type="file" id="file-2" class="hidden" accept="image/*" onchange="procesarFoto(event, 2)">
+                </div>
+                <div onclick="document.getElementById('file-3').click()" class="border-2 border-dashed border-slate-200 rounded-xl h-24 flex items-center justify-center bg-slate-50 overflow-hidden">
+                    <img id="prev-3" class="hidden w-full h-full object-cover">
+                    <span id="plus-3" class="text-slate-300 text-xl">+</span>
+                    <input type="file" id="file-3" class="hidden" accept="image/*" onchange="procesarFoto(event, 3)">
+                </div>
+            </div>
+
+            <input id="p-nombre" type="text" placeholder="Nombre (Ej: Paleta Coco Especial)" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-blue-600 transition-all">
+            <input id="p-precio" type="number" placeholder="Precio de la Caja" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-blue-600 transition-all">
+            
+            <select id="p-cat" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none">
+                <option value="agua">Agua</option>
+                <option value="crema">Crema</option>
+                <option value="especial">Especialidad</option>
+            </select>
+
+            <textarea id="p-desc" placeholder="Descripción (Ingredientes, beneficios, promociones...)" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none h-24 text-sm"></textarea>
+            
+            <div class="flex gap-2">
+                <button onclick="guardarProducto()" class="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg">Guardar</button>
+                <button onclick="abrirFormulario()" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-xl font-bold">Cerrar</button>
+            </div>
+        </div>
+
+        <div id="lista-gestion" class="space-y-3"></div>
+    </div>
+
+    <script>
+        let fotos = [null, null, null];
+        let misProductos = JSON.parse(localStorage.getItem('mis_productos_inventario')) || [];
+
+        function procesarFoto(event, num) {
+            const archivo = event.target.files[0];
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                fotos[num-1] = reader.result;
+                document.getElementById(`prev-${num}`).src = reader.result;
+                document.getElementById(`prev-${num}`).classList.remove('hidden');
+                document.getElementById(`plus-${num}`).classList.add('hidden');
+            }
+            if(archivo) reader.readAsDataURL(archivo);
+        }
+
+        function abrirFormulario() {
+            document.getElementById('formulario-producto').classList.toggle('hidden');
+        }
+
+        function guardarProducto() {
+            const nombre = document.getElementById('p-nombre').value;
+            const precio = document.getElementById('p-precio').value;
+            const cat = document.getElementById('p-cat').value;
+            const desc = document.getElementById('p-desc').value;
+
+            if(!nombre || !precio || !fotos[0]) return alert("Nombre, Precio y al menos la primera foto son obligatorios");
+
+            const nuevo = { 
+                id: Date.now(), 
+                nombre, 
+                precio: parseInt(precio), 
+                cat, 
+                desc,
+                imagenes: fotos.filter(f => f !== null) // Guardamos solo las fotos que se subieron
+            };
+
+            misProductos.push(nuevo);
+            localStorage.setItem('mis_productos_inventario', JSON.stringify(misProductos));
+            location.reload();
+        }
+
+        const lista = document.getElementById('lista-gestion');
+        misProductos.forEach(p => {
+            lista.innerHTML += `
+                <div class="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm border border-slate-100">
+                    <div class="flex items-center gap-3">
+                        <img src="${p.imagenes[0]}" class="w-12 h-12 rounded-xl object-cover">
+                        <div>
+                            <p class="font-bold text-sm text-slate-800">${p.nombre}</p>
+                            <p class="text-xs text-blue-600 font-bold">$${p.precio.toLocaleString()}</p>
+                        </div>
+                    </div>
+                    <button onclick="eliminar(${p.id})" class="text-red-400 font-bold text-xs p-2">BORRAR</button>
+                </div>
+            `;
+        });
+
+        function eliminar(id) {
+            if(confirm("¿Borrar este producto?")) {
+                misProductos = misProductos.filter(p => p.id !== id);
+                localStorage.setItem('mis_productos_inventario', JSON.stringify(misProductos));
+                location.reload();
+            }
+        }
+    </script>
+</body>
+</html>

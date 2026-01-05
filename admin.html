@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Zurto Admin - Control de Despachos</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="config.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Lexend', sans-serif; }
+        .card-grad { background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); }
+    </style>
+</head>
+<body class="bg-[#f8fafc] pb-20">
+
+    <div class="card-grad p-6 text-white shadow-2xl sticky top-0 z-50">
+        <div class="flex justify-between items-center mb-6">
+            <div>
+                <h1 id="marca-nombre-admin" class="text-2xl font-bold tracking-tighter italic uppercase">ZURTO</h1>
+                <p class="text-[10px] text-slate-400 uppercase tracking-widest">Panel de Distribución</p>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="cerrarSesion()" class="bg-red-500/20 p-3 rounded-2xl border border-red-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                </button>
+                <button onclick="cargarPedidos()" class="bg-blue-600/20 p-3 rounded-2xl border border-blue-500/30">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-blue-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-2 gap-4 text-center">
+            <div class="bg-white/5 p-3 rounded-2xl border border-white/10">
+                <p class="text-[9px] text-slate-400 uppercase font-bold">Ventas Pendientes</p>
+                <p class="text-xl font-bold" id="total-ventas">$0</p>
+            </div>
+            <div class="bg-white/5 p-3 rounded-2xl border border-white/10">
+                <p class="text-[9px] text-slate-400 uppercase font-bold">Cajas</p>
+                <p class="text-xl font-bold text-blue-400" id="cantidad-pendientes">0</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="p-6">
+        <div id="contenedor-pedidos" class="space-y-4"></div>
+    </div>
+
+    <script>
+        // --- FUNCIÓN PARA GENERAR EL PDF INTELIGENTE ---
+        function generarPDF(cliente, total, items, fecha) {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            // Traer branding
+            const config = JSON.parse(localStorage.getItem('config_marca')) || { nombre: "Zurto", color: "#2563eb" };
+            
+            // Convertir Hexadecimal a RGB para jsPDF
+            const hexToRgb = hex => hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i,(m, r, g, b) => '#' + r + r + g + g + b + b).substring(1).match(/.{2}/g).map(x => parseInt(x, 16));
+            const rgb = hexToRgb(config.color);
+
+            // Cabecera con el color de la marca
+            doc.setFillColor(rgb[0], rgb[1], rgb[2]);
+            doc.rect(0, 0, 210, 40, 'F');
+            
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(22);
+            doc.setTextColor(255, 255, 255);
+            doc.text(config.nombre.toUpperCase(), 20, 25);
+            
+            doc.setFontSize(10);
+            doc.text("ORDEN DE DESPACHO OFICIAL", 140, 25);
+
+            // Información del Cliente
+            doc.setTextColor(30, 41, 59);
+            doc.setFontSize(12);
+            doc.text(`PARA: ${cliente}`, 20, 55);
+            doc.text(`FECHA: ${fecha}`, 20, 62);
+            doc.line(20, 68, 190, 68);
+
+            // Detalle de productos
+            doc.setFont("helvetica", "bold");
+            doc.text("DETALLE DEL PEDIDO", 20, 80);
+            
+            doc.setFont("helvetica", "normal");
+            const listaItems = items.split(', ');
+            let y = 90;
+            listaItems.forEach(item => {
+                if(item.trim() !== "") {
+                    doc.text(`• ${item}`, 25, y);
+                    y += 8;
+                }
+            });
+
+            // Total
+            doc.setDrawColor(rgb[0], rgb[1], rgb[2]);
+            doc.setLineWidth(1);
+            doc.line(20, y + 5, 190, y + 5);
+            
+            doc.setFont("helvetica", "bold");
+            doc.setFontSize(16);
+            doc.setTextColor(rgb[0], rgb[1], rgb[2]);
+            doc.text(`TOTAL A COBRAR: $${total.toLocaleString('es-CO')}`, 20, y + 18);
+
+            // Pie de página
+            doc.setFontSize(8);
+            doc.setTextColor(150);
+            doc.text(`Documento generado por Zurto - Tecnología para Distribuidoras`, 20, 285);
+
+            doc.save(`Pedido_${cliente.replace(/\s/g, '_')}.pdf`);
+        }
+
+        async function cambiarEstado(idPedido, nuevoEstado) {
+            try {
+                await fetch(`${ZURTO_URL}/rest/v1/pedidos?id=eq.${idPedido}`, {
+                    method: "PATCH",
+                    headers: { "apikey": ZURTO_KEY, "Authorization": `Bearer ${ZURTO_KEY}`, "Content-Type": "application/json" },
+                    body: JSON.stringify({ estado: nuevoEstado })
+                });
+                cargarPedidos();
+            } catch (error) { alert("Error"); }
+        }
+
+        async function cargarPedidos() {
+            const contenedor = document.getElementById('contenedor-pedidos');
+            const config = JSON.parse(localStorage.getItem('config_marca')) || { nombre: "Zurto" };
+            document.getElementById('marca-nombre-admin').innerText = config.nombre;
+
+            try {
+                const respuesta = await fetch(`${ZURTO_URL}/rest/v1/pedidos?select=*&order=fecha.desc`, {
+                    headers: { "apikey": ZURTO_KEY, "Authorization": `Bearer ${ZURTO_KEY}` }
+                });
+                const pedidos = await respuesta.json();
+                let sumaTotal = 0; let pendientes = 0;
+                contenedor.innerHTML = "";
+
+                pedidos.forEach(p => {
+                    if (p.estado === 'Pendiente') { sumaTotal += p.total; pendientes++; }
+                    const fechaFormat = new Date(p.fecha).toLocaleString();
+                    
+                    contenedor.innerHTML += `
+                        <div class="bg-white p-6 rounded-[32px] shadow-sm border border-slate-100">
+                            <div class="flex justify-between items-start mb-4">
+                                <div>
+                                    <p class="font-bold text-slate-800 text-lg">${p.cliente}</p>
+                                    <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">${fechaFormat}</p>
+                                </div>
+                                <span class="text-[10px] font-black px-3 py-1 rounded-full ${p.estado === 'Pendiente' ? 'bg-orange-100 text-orange-600' : 'bg-green-100 text-green-600'}">${p.estado.toUpperCase()}</span>
+                            </div>
+                            
+                            <p class="text-sm text-slate-600 mb-6 bg-slate-50 p-4 rounded-2xl border border-dashed border-slate-200">${p.items}</p>
+
+                            <div class="grid grid-cols-2 gap-2">
+                                <button onclick="generarPDF('${p.cliente}', ${p.total}, '${p.items}', '${fechaFormat}')" 
+                                    class="col-span-2 bg-slate-900 text-white text-xs font-bold py-4 rounded-2xl mb-2">📄 DESCARGAR ORDEN</button>
+                                <button onclick="cambiarEstado('${p.id}', 'Despachado')" class="bg-blue-600 text-white text-[10px] font-bold py-3 rounded-xl">DESPACHADO</button>
+                                <button onclick="cambiarEstado('${p.id}', 'Pagado')" class="bg-emerald-500 text-white text-[10px] font-bold py-3 rounded-xl">MARCAR PAGADO</button>
+                            </div>
+                        </div>
+                    `;
+                });
+
+                document.getElementById('total-ventas').innerText = "$" + sumaTotal.toLocaleString('es-CO');
+                document.getElementById('cantidad-pendientes').innerText = pendientes;
+                aplicarBranding(); // Aplicar colores de marca a los botones azules
+            } catch (error) { contenedor.innerHTML = "Error cargando datos."; }
+        }
+
+        if (localStorage.getItem('admin_autenticado') !== 'true') window.location.href = "login-admin.html";
+        function cerrarSesion() { localStorage.removeItem('admin_autenticado'); window.location.href = "login-admin.html"; }
+        
+        cargarPedidos();
+    </script>
+</body>
+</html>
