@@ -51,19 +51,18 @@
             </div>
             <div class="bg-blue-600 p-6 rounded-[32px] text-white">
                 <h3 class="font-bold text-lg mb-1">Prueba Piloto Activa</h3>
-                <p class="text-blue-100 text-xs">Comparte el link de tu catálogo con los tenderos para empezar a recibir pedidos aquí mismo.</p>
+                <p class="text-blue-100 text-xs">Gestiona tu marca Halegría desde aquí.</p>
             </div>
         </section>
 
         <section id="sec-pedidos" class="section space-y-4">
             <h2 class="font-black text-xl text-slate-800 mb-4">Gestión de Despachos</h2>
-            <div id="lista-pedidos" class="space-y-4">
-                </div>
+            <div id="lista-pedidos" class="space-y-4"></div>
         </section>
 
         <section id="sec-productos" class="section space-y-4 text-center">
             <div class="bg-white p-8 rounded-[40px] border-2 border-dashed border-slate-300">
-                <p class="text-slate-500 text-sm mb-4">Aquí podrás subir fotos, precios y stock.</p>
+                <p class="text-slate-500 text-sm mb-4">Añade o edita tus productos del catálogo.</p>
                 <button onclick="window.location.href='admin-productos.html'" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold text-sm">Gestionar Catálogo</button>
             </div>
         </section>
@@ -72,18 +71,8 @@
             <div class="bg-white p-6 rounded-3xl border border-slate-200">
                 <h3 class="font-bold mb-4">Identidad Visual</h3>
                 <button onclick="window.location.href='admin-config.html'" class="w-full bg-slate-100 text-slate-700 py-4 rounded-2xl font-bold mb-6">🎨 Editar Nombre y Color</button>
-                
-                <hr class="mb-6">
-                
-                <h3 class="font-bold mb-2">Medios de Pago</h3>
-                <label class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl mb-2 border border-slate-100">
-                    <input type="checkbox" checked class="w-5 h-5 rounded text-blue-600">
-                    <span class="text-sm font-semibold">Efectivo contra entrega</span>
-                </label>
-                <label class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 opacity-50">
-                    <input type="checkbox" disabled class="w-5 h-5 rounded">
-                    <span class="text-sm font-semibold">Nequi / Daviplata (Próximamente)</span>
-                </label>
+                <h3 class="font-bold mb-2 text-sm text-slate-400 uppercase">Pagos Aceptados</h3>
+                <p class="text-xs font-semibold text-slate-600 bg-slate-100 p-3 rounded-xl italic">Efectivo contra entrega (Activo por defecto)</p>
             </div>
         </section>
 
@@ -91,17 +80,23 @@
 
     <script>
         function showTab(tabId) {
-            // Ocultar todas las secciones
+            // Guardamos en la memoria del navegador qué pestaña estamos viendo
+            localStorage.setItem('lastTab', tabId);
+            
             document.querySelectorAll('.section').forEach(s => s.classList.remove('section-active'));
-            // Desactivar todas las pestañas
             document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
             
-            // Activar la seleccionada
             document.getElementById('sec-' + tabId).classList.add('section-active');
             document.getElementById('tab-' + tabId).classList.add('tab-active');
         }
 
         async function cargarDatos() {
+            // REVISAR SI VENÍAMOS DE PRODUCTOS
+            const ultimaPestana = localStorage.getItem('lastTab');
+            if(ultimaPestana) {
+                showTab(ultimaPestana);
+            }
+
             const config = JSON.parse(localStorage.getItem('config_marca')) || { nombre: "Halegría", color: "#2563eb" };
             document.getElementById('header-nombre-marca').innerText = config.nombre;
 
@@ -115,18 +110,22 @@
                 const container = document.getElementById('lista-pedidos');
                 container.innerHTML = "";
 
+                if(pedidos.length === 0) {
+                    container.innerHTML = "<p class='text-center text-slate-400 py-10'>No hay pedidos aún</p>";
+                }
+
                 pedidos.forEach(p => {
                     totalDia += p.total;
                     container.innerHTML += `
                         <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
                             <div class="flex justify-between items-start mb-2">
-                                <h4 class="font-bold text-slate-900">${p.cliente}</h4>
-                                <span class="text-[10px] font-black bg-orange-100 text-orange-600 px-2 py-1 rounded-lg uppercase">${p.estado}</span>
+                                <h4 class="font-bold text-slate-900 text-sm">${p.cliente}</h4>
+                                <span class="text-[10px] font-black bg-blue-100 text-blue-600 px-2 py-1 rounded-lg uppercase">Nuevo</span>
                             </div>
-                            <p class="text-xs text-slate-500 mb-3">${p.items}</p>
-                            <div class="flex justify-between items-center">
+                            <p class="text-[11px] text-slate-500 mb-3">${p.items}</p>
+                            <div class="flex justify-between items-center pt-2 border-t">
                                 <p class="font-black text-slate-900">$${p.total.toLocaleString()}</p>
-                                <button class="text-[10px] font-bold text-blue-600 underline">VER ORDEN</button>
+                                <button class="text-[10px] font-bold bg-slate-900 text-white px-3 py-1.5 rounded-full">PDF</button>
                             </div>
                         </div>
                     `;
@@ -135,7 +134,7 @@
                 document.getElementById('stat-ventas').innerText = "$" + totalDia.toLocaleString();
                 document.getElementById('stat-conteo').innerText = pedidos.length;
 
-            } catch (e) { console.error("Error al cargar", e); }
+            } catch (e) { console.error("Error", e); }
         }
 
         cargarDatos();
