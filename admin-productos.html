@@ -3,129 +3,142 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Zurto - Gestionar Productos PRO</title>
+    <title>Panel de Control - Proveedor</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="config.js"></script>
-    <link href="https://fonts.googleapis.com/css2?family=Lexend:wght@400;700&display=swap" rel="stylesheet">
-    <style>body { font-family: 'Lexend', sans-serif; }</style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
+        .tab-active { border-bottom: 3px solid #2563eb; color: #2563eb; font-weight: 800; }
+        .section { display: none; }
+        .section-active { display: block; }
+    </style>
 </head>
-<body class="bg-slate-50 pb-20">
+<body>
 
-    <div class="max-w-md mx-auto p-6">
-        <header class="flex justify-between items-center mb-8">
-            <div>
-                <h1 class="text-2xl font-bold text-slate-900">Mis Productos</h1>
-                <p class="text-[10px] text-slate-400 font-bold uppercase tracking-widest">Editor de Catálogo</p>
-            </div>
-            <button onclick="abrirFormulario()" class="bg-blue-600 text-white w-12 h-12 rounded-2xl font-bold text-2xl shadow-lg">+</button>
-        </header>
-
-        <div id="formulario-producto" class="hidden bg-white p-6 rounded-[32px] shadow-xl border border-slate-100 mb-8 space-y-4">
-            <h3 class="font-bold text-slate-800">Detalles del Producto</h3>
-            
-            <div class="grid grid-cols-3 gap-2">
-                <div onclick="document.getElementById('file-1').click()" class="border-2 border-dashed border-slate-200 rounded-xl h-24 flex items-center justify-center bg-slate-50 overflow-hidden">
-                    <img id="prev-1" class="hidden w-full h-full object-cover">
-                    <span id="plus-1" class="text-slate-300 text-xl">+</span>
-                    <input type="file" id="file-1" class="hidden" accept="image/*" onchange="procesarFoto(event, 1)">
-                </div>
-                <div onclick="document.getElementById('file-2').click()" class="border-2 border-dashed border-slate-200 rounded-xl h-24 flex items-center justify-center bg-slate-50 overflow-hidden">
-                    <img id="prev-2" class="hidden w-full h-full object-cover">
-                    <span id="plus-2" class="text-slate-300 text-xl">+</span>
-                    <input type="file" id="file-2" class="hidden" accept="image/*" onchange="procesarFoto(event, 2)">
-                </div>
-                <div onclick="document.getElementById('file-3').click()" class="border-2 border-dashed border-slate-200 rounded-xl h-24 flex items-center justify-center bg-slate-50 overflow-hidden">
-                    <img id="prev-3" class="hidden w-full h-full object-cover">
-                    <span id="plus-3" class="text-slate-300 text-xl">+</span>
-                    <input type="file" id="file-3" class="hidden" accept="image/*" onchange="procesarFoto(event, 3)">
-                </div>
-            </div>
-
-            <input id="p-nombre" type="text" placeholder="Nombre (Ej: Paleta Coco Especial)" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-blue-600 transition-all">
-            <input id="p-precio" type="number" placeholder="Precio de la Caja" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none focus:border-blue-600 transition-all">
-            
-            <select id="p-cat" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none">
-                <option value="agua">Agua</option>
-                <option value="crema">Crema</option>
-                <option value="especial">Especialidad</option>
-            </select>
-
-            <textarea id="p-desc" placeholder="Descripción (Ingredientes, beneficios, promociones...)" class="w-full p-4 rounded-xl bg-slate-50 border border-slate-200 outline-none h-24 text-sm"></textarea>
-            
-            <div class="flex gap-2">
-                <button onclick="guardarProducto()" class="flex-1 bg-blue-600 text-white py-4 rounded-xl font-bold shadow-lg">Guardar</button>
-                <button onclick="abrirFormulario()" class="flex-1 bg-slate-100 text-slate-500 py-4 rounded-xl font-bold">Cerrar</button>
+    <header class="bg-white shadow-sm sticky top-0 z-40">
+        <div class="px-6 py-4 flex justify-between items-center">
+            <h1 id="header-nombre-marca" class="text-xl font-extrabold tracking-tight text-slate-900 uppercase">HALEGRÍA</h1>
+            <div class="flex items-center gap-4">
+                <span class="text-xs font-bold text-green-500 bg-green-50 px-2 py-1 rounded-lg uppercase tracking-widest">En Línea</span>
+                <button onclick="window.location.reload()" class="p-2 bg-slate-100 rounded-full hover:bg-slate-200">
+                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                </button>
             </div>
         </div>
+        
+        <nav class="flex px-6 border-t overflow-x-auto whitespace-nowrap bg-white">
+            <button onclick="showTab('stats')" id="tab-stats" class="px-4 py-3 text-sm font-semibold text-slate-500 tab-active">📊 Resumen</button>
+            <button onclick="showTab('pedidos')" id="tab-pedidos" class="px-4 py-3 text-sm font-semibold text-slate-500">📦 Pedidos</button>
+            <button onclick="showTab('productos')" id="tab-productos" class="px-4 py-3 text-sm font-semibold text-slate-500">🍦 Productos</button>
+            <button onclick="showTab('marca')" id="tab-marca" class="px-4 py-3 text-sm font-semibold text-slate-500">⚙️ Mi Marca</button>
+        </nav>
+    </header>
 
-        <div id="lista-gestion" class="space-y-3"></div>
-    </div>
+    <main class="p-6 max-w-5xl mx-auto">
+
+        <section id="sec-stats" class="section section-active space-y-6">
+            <div class="grid grid-cols-2 gap-4">
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
+                    <p class="text-[10px] uppercase font-black text-slate-400">Ventas Hoy</p>
+                    <p class="text-2xl font-black text-slate-900" id="stat-ventas">$0</p>
+                </div>
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
+                    <p class="text-[10px] uppercase font-black text-slate-400">Pedidos</p>
+                    <p class="text-2xl font-black text-blue-600" id="stat-conteo">0</p>
+                </div>
+            </div>
+            <div class="bg-blue-600 p-6 rounded-[32px] text-white">
+                <h3 class="font-bold text-lg mb-1">Prueba Piloto Activa</h3>
+                <p class="text-blue-100 text-xs">Comparte el link de tu catálogo con los tenderos para empezar a recibir pedidos aquí mismo.</p>
+            </div>
+        </section>
+
+        <section id="sec-pedidos" class="section space-y-4">
+            <h2 class="font-black text-xl text-slate-800 mb-4">Gestión de Despachos</h2>
+            <div id="lista-pedidos" class="space-y-4">
+                </div>
+        </section>
+
+        <section id="sec-productos" class="section space-y-4 text-center">
+            <div class="bg-white p-8 rounded-[40px] border-2 border-dashed border-slate-300">
+                <p class="text-slate-500 text-sm mb-4">Aquí podrás subir fotos, precios y stock.</p>
+                <button onclick="window.location.href='admin-productos.html'" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold text-sm">Gestionar Catálogo</button>
+            </div>
+        </section>
+
+        <section id="sec-marca" class="section space-y-4">
+            <div class="bg-white p-6 rounded-3xl border border-slate-200">
+                <h3 class="font-bold mb-4">Identidad Visual</h3>
+                <button onclick="window.location.href='admin-config.html'" class="w-full bg-slate-100 text-slate-700 py-4 rounded-2xl font-bold mb-6">🎨 Editar Nombre y Color</button>
+                
+                <hr class="mb-6">
+                
+                <h3 class="font-bold mb-2">Medios de Pago</h3>
+                <label class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl mb-2 border border-slate-100">
+                    <input type="checkbox" checked class="w-5 h-5 rounded text-blue-600">
+                    <span class="text-sm font-semibold">Efectivo contra entrega</span>
+                </label>
+                <label class="flex items-center gap-3 p-4 bg-slate-50 rounded-2xl border border-slate-100 opacity-50">
+                    <input type="checkbox" disabled class="w-5 h-5 rounded">
+                    <span class="text-sm font-semibold">Nequi / Daviplata (Próximamente)</span>
+                </label>
+            </div>
+        </section>
+
+    </main>
 
     <script>
-        let fotos = [null, null, null];
-        let misProductos = JSON.parse(localStorage.getItem('mis_productos_inventario')) || [];
-
-        function procesarFoto(event, num) {
-            const archivo = event.target.files[0];
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                fotos[num-1] = reader.result;
-                document.getElementById(`prev-${num}`).src = reader.result;
-                document.getElementById(`prev-${num}`).classList.remove('hidden');
-                document.getElementById(`plus-${num}`).classList.add('hidden');
-            }
-            if(archivo) reader.readAsDataURL(archivo);
+        function showTab(tabId) {
+            // Ocultar todas las secciones
+            document.querySelectorAll('.section').forEach(s => s.classList.remove('section-active'));
+            // Desactivar todas las pestañas
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
+            
+            // Activar la seleccionada
+            document.getElementById('sec-' + tabId).classList.add('section-active');
+            document.getElementById('tab-' + tabId).classList.add('tab-active');
         }
 
-        function abrirFormulario() {
-            document.getElementById('formulario-producto').classList.toggle('hidden');
-        }
+        async function cargarDatos() {
+            const config = JSON.parse(localStorage.getItem('config_marca')) || { nombre: "Halegría", color: "#2563eb" };
+            document.getElementById('header-nombre-marca').innerText = config.nombre;
 
-        function guardarProducto() {
-            const nombre = document.getElementById('p-nombre').value;
-            const precio = document.getElementById('p-precio').value;
-            const cat = document.getElementById('p-cat').value;
-            const desc = document.getElementById('p-desc').value;
+            try {
+                const res = await fetch(`${ZURTO_URL}/rest/v1/pedidos?select=*&order=fecha.desc`, {
+                    headers: { "apikey": ZURTO_KEY, "Authorization": `Bearer ${ZURTO_KEY}` }
+                });
+                const pedidos = await res.json();
+                
+                let totalDia = 0;
+                const container = document.getElementById('lista-pedidos');
+                container.innerHTML = "";
 
-            if(!nombre || !precio || !fotos[0]) return alert("Nombre, Precio y al menos la primera foto son obligatorios");
-
-            const nuevo = { 
-                id: Date.now(), 
-                nombre, 
-                precio: parseInt(precio), 
-                cat, 
-                desc,
-                imagenes: fotos.filter(f => f !== null) // Guardamos solo las fotos que se subieron
-            };
-
-            misProductos.push(nuevo);
-            localStorage.setItem('mis_productos_inventario', JSON.stringify(misProductos));
-            location.reload();
-        }
-
-        const lista = document.getElementById('lista-gestion');
-        misProductos.forEach(p => {
-            lista.innerHTML += `
-                <div class="bg-white p-4 rounded-2xl flex justify-between items-center shadow-sm border border-slate-100">
-                    <div class="flex items-center gap-3">
-                        <img src="${p.imagenes[0]}" class="w-12 h-12 rounded-xl object-cover">
-                        <div>
-                            <p class="font-bold text-sm text-slate-800">${p.nombre}</p>
-                            <p class="text-xs text-blue-600 font-bold">$${p.precio.toLocaleString()}</p>
+                pedidos.forEach(p => {
+                    totalDia += p.total;
+                    container.innerHTML += `
+                        <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
+                            <div class="flex justify-between items-start mb-2">
+                                <h4 class="font-bold text-slate-900">${p.cliente}</h4>
+                                <span class="text-[10px] font-black bg-orange-100 text-orange-600 px-2 py-1 rounded-lg uppercase">${p.estado}</span>
+                            </div>
+                            <p class="text-xs text-slate-500 mb-3">${p.items}</p>
+                            <div class="flex justify-between items-center">
+                                <p class="font-black text-slate-900">$${p.total.toLocaleString()}</p>
+                                <button class="text-[10px] font-bold text-blue-600 underline">VER ORDEN</button>
+                            </div>
                         </div>
-                    </div>
-                    <button onclick="eliminar(${p.id})" class="text-red-400 font-bold text-xs p-2">BORRAR</button>
-                </div>
-            `;
-        });
+                    `;
+                });
 
-        function eliminar(id) {
-            if(confirm("¿Borrar este producto?")) {
-                misProductos = misProductos.filter(p => p.id !== id);
-                localStorage.setItem('mis_productos_inventario', JSON.stringify(misProductos));
-                location.reload();
-            }
+                document.getElementById('stat-ventas').innerText = "$" + totalDia.toLocaleString();
+                document.getElementById('stat-conteo').innerText = pedidos.length;
+
+            } catch (e) { console.error("Error al cargar", e); }
         }
+
+        cargarDatos();
     </script>
 </body>
 </html>
