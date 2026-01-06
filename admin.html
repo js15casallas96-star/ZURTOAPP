@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel de Control - Proveedor</title>
+    <title>Panel Halegría</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="config.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;800&display=swap" rel="stylesheet">
     <style>
         body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #f1f5f9; }
@@ -16,127 +14,77 @@
     </style>
 </head>
 <body>
-
     <header class="bg-white shadow-sm sticky top-0 z-40">
         <div class="px-6 py-4 flex justify-between items-center">
-            <h1 id="header-nombre-marca" class="text-xl font-extrabold tracking-tight text-slate-900 uppercase">HALEGRÍA</h1>
-            <div class="flex items-center gap-4">
-                <span class="text-xs font-bold text-green-500 bg-green-50 px-2 py-1 rounded-lg uppercase tracking-widest">En Línea</span>
-                <button onclick="window.location.reload()" class="p-2 bg-slate-100 rounded-full hover:bg-slate-200">
-                    <svg class="w-5 h-5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
-                </button>
-            </div>
+            <h1 class="text-xl font-extrabold text-slate-900 uppercase">HALEGRÍA</h1>
         </div>
-        
-        <nav class="flex px-6 border-t overflow-x-auto whitespace-nowrap bg-white">
-            <button onclick="showTab('stats')" id="tab-stats" class="px-4 py-3 text-sm font-semibold text-slate-500 tab-active">📊 Resumen</button>
+        <nav class="flex px-6 border-t bg-white overflow-x-auto">
+            <button onclick="showTab('stats')" id="tab-stats" class="px-4 py-3 text-sm font-semibold tab-active">📊 Resumen</button>
             <button onclick="showTab('pedidos')" id="tab-pedidos" class="px-4 py-3 text-sm font-semibold text-slate-500">📦 Pedidos</button>
             <button onclick="showTab('productos')" id="tab-productos" class="px-4 py-3 text-sm font-semibold text-slate-500">🍦 Productos</button>
-            <button onclick="showTab('marca')" id="tab-marca" class="px-4 py-3 text-sm font-semibold text-slate-500">⚙️ Mi Marca</button>
         </nav>
     </header>
 
     <main class="p-6 max-w-5xl mx-auto">
-
         <section id="sec-stats" class="section section-active space-y-6">
             <div class="grid grid-cols-2 gap-4">
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
-                    <p class="text-[10px] uppercase font-black text-slate-400">Ventas Hoy</p>
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 text-center">
+                    <p class="text-[10px] uppercase font-black text-slate-400 italic">Ventas Hoy</p>
                     <p class="text-2xl font-black text-slate-900" id="stat-ventas">$0</p>
                 </div>
-                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
-                    <p class="text-[10px] uppercase font-black text-slate-400">Pedidos</p>
+                <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200 text-center">
+                    <p class="text-[10px] uppercase font-black text-slate-400 italic">Pedidos</p>
                     <p class="text-2xl font-black text-blue-600" id="stat-conteo">0</p>
                 </div>
-            </div>
-            <div class="bg-blue-600 p-6 rounded-[32px] text-white">
-                <h3 class="font-bold text-lg mb-1">Prueba Piloto Activa</h3>
-                <p class="text-blue-100 text-xs">Gestiona tu marca Halegría desde aquí.</p>
             </div>
         </section>
 
         <section id="sec-pedidos" class="section space-y-4">
-            <h2 class="font-black text-xl text-slate-800 mb-4">Gestión de Despachos</h2>
-            <div id="lista-pedidos" class="space-y-4"></div>
+            <div id="lista-pedidos" class="space-y-4">
+                <p class="text-center text-slate-400 py-10">Cargando pedidos...</p>
+            </div>
         </section>
 
         <section id="sec-productos" class="section space-y-4 text-center">
-            <div class="bg-white p-8 rounded-[40px] border-2 border-dashed border-slate-300">
-                <p class="text-slate-500 text-sm mb-4">Añade o edita tus productos del catálogo.</p>
-                <button onclick="window.location.href='admin-productos.html'" class="bg-slate-900 text-white px-6 py-3 rounded-2xl font-bold text-sm">Gestionar Catálogo</button>
+            <div class="bg-white p-10 rounded-[40px] border-2 border-dashed border-slate-300">
+                <p class="text-slate-500 mb-6">Gestiona tu catálogo de paletas aquí.</p>
+                <button onclick="window.location.href='admin-productos.html'" class="bg-slate-900 text-white px-8 py-4 rounded-2xl font-bold">Gestionar Catálogo</button>
             </div>
         </section>
-
-        <section id="sec-marca" class="section space-y-4">
-            <div class="bg-white p-6 rounded-3xl border border-slate-200">
-                <h3 class="font-bold mb-4">Identidad Visual</h3>
-                <button onclick="window.location.href='admin-config.html'" class="w-full bg-slate-100 text-slate-700 py-4 rounded-2xl font-bold mb-6">🎨 Editar Nombre y Color</button>
-                <h3 class="font-bold mb-2 text-sm text-slate-400 uppercase">Pagos Aceptados</h3>
-                <p class="text-xs font-semibold text-slate-600 bg-slate-100 p-3 rounded-xl italic">Efectivo contra entrega (Activo por defecto)</p>
-            </div>
-        </section>
-
     </main>
 
     <script>
+        const URL_DB = "https://pvedrhxzfhxgosuecczz.supabase.co/rest/v1";
+        const KEY_DB = "sb_publishable_3KUGa57mxOhfXJxZp7BlIg_pfvBWlsn";
+
         function showTab(tabId) {
-            // Guardamos en la memoria del navegador qué pestaña estamos viendo
-            localStorage.setItem('lastTab', tabId);
-            
             document.querySelectorAll('.section').forEach(s => s.classList.remove('section-active'));
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('tab-active'));
-            
+            document.querySelectorAll('nav button').forEach(b => {
+                b.classList.remove('tab-active');
+                b.classList.add('text-slate-500');
+            });
             document.getElementById('sec-' + tabId).classList.add('section-active');
             document.getElementById('tab-' + tabId).classList.add('tab-active');
         }
 
         async function cargarDatos() {
-            // REVISAR SI VENÍAMOS DE PRODUCTOS
-            const ultimaPestana = localStorage.getItem('lastTab');
-            if(ultimaPestana) {
-                showTab(ultimaPestana);
-            }
-
-            const config = JSON.parse(localStorage.getItem('config_marca')) || { nombre: "Halegría", color: "#2563eb" };
-            document.getElementById('header-nombre-marca').innerText = config.nombre;
-
             try {
-                const res = await fetch(`${ZURTO_URL}/rest/v1/pedidos?select=*&order=fecha.desc`, {
-                    headers: { "apikey": ZURTO_KEY, "Authorization": `Bearer ${ZURTO_KEY}` }
+                const res = await fetch(`${URL_DB}/pedidos?select=*`, {
+                    headers: { "apikey": KEY_DB, "Authorization": `Bearer ${KEY_DB}` }
                 });
                 const pedidos = await res.json();
-                
-                let totalDia = 0;
-                const container = document.getElementById('lista-pedidos');
-                container.innerHTML = "";
-
-                if(pedidos.length === 0) {
-                    container.innerHTML = "<p class='text-center text-slate-400 py-10'>No hay pedidos aún</p>";
-                }
-
-                pedidos.forEach(p => {
-                    totalDia += p.total;
-                    container.innerHTML += `
-                        <div class="bg-white p-5 rounded-3xl shadow-sm border border-slate-200">
-                            <div class="flex justify-between items-start mb-2">
-                                <h4 class="font-bold text-slate-900 text-sm">${p.cliente}</h4>
-                                <span class="text-[10px] font-black bg-blue-100 text-blue-600 px-2 py-1 rounded-lg uppercase">Nuevo</span>
-                            </div>
-                            <p class="text-[11px] text-slate-500 mb-3">${p.items}</p>
-                            <div class="flex justify-between items-center pt-2 border-t">
-                                <p class="font-black text-slate-900">$${p.total.toLocaleString()}</p>
-                                <button class="text-[10px] font-bold bg-slate-900 text-white px-3 py-1.5 rounded-full">PDF</button>
-                            </div>
-                        </div>
-                    `;
-                });
-
-                document.getElementById('stat-ventas').innerText = "$" + totalDia.toLocaleString();
                 document.getElementById('stat-conteo').innerText = pedidos.length;
-
-            } catch (e) { console.error("Error", e); }
+                const container = document.getElementById('lista-pedidos');
+                container.innerHTML = pedidos.length === 0 ? "<p class='text-center py-10 text-slate-400'>No hay pedidos aún</p>" : "";
+                
+                let total = 0;
+                pedidos.forEach(p => {
+                    total += p.total;
+                    container.innerHTML += `<div class="bg-white p-4 rounded-2xl border"><b>${p.cliente}</b><br><small>${p.items}</small><br><b>$${p.total}</b></div>`;
+                });
+                document.getElementById('stat-ventas').innerText = "$" + total.toLocaleString();
+            } catch (e) { console.error(e); }
         }
-
         cargarDatos();
     </script>
 </body>
